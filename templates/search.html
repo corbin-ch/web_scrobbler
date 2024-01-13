@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Album Scrobbler</title>
+</head>
+<body>
+    <h1>Album Scrobbler</h1>
+    <form action="/search" method="post">
+        <label for="artist">Artist:</label>
+        <input type="text" id="artist" name="artist" required>
+        <label for="limit">Limit:</label>
+        <input type="number" id="limit" value="10" name="limit" required>
+        <input type="submit" value="Search Albums">
+    </form>
+</body>
+</html>

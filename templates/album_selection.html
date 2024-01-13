@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Album</title>
+</head>
+<body>
+    <h1>Select an Album to Scrobble</h1>
+    <form action="/scrobble" method="post">
+        <input type="hidden" name="artist" value="{{ artist }}">
+        <label for="album">Choose an Album:</label>
+        <select name="album" id="album">
+            {% for album in albums %}
+                <option value="{{ album.name }}">{{ album.rank }}: {{ album.name }} ({{ album.track_count }} tracks)</option>
+            {% endfor %}
+        </select>
+        <label for="time">Scrobble Time (optional):</label>
+        <input type="text" id="time" name="time_str" value="{{ current_time }}">
+        <input type="submit" value="Scrobble Album">
+    </form>
+    <br>
+    <button onclick="window.location.href='/'">Back to search</button>
+</body>
+</html>
