@@ -148,12 +148,11 @@ def search_albums(artist, limit=10):
         try:
             track_count = len(album.item.get_tracks())
             album_name = album.item.get_name()
-            rank = n_albums - index + 1
-            album_details.append({'name': album_name, 'track_count': track_count, 'rank': rank})
+            album_details.append({'name': album_name, 'track_count': track_count, 'rank': index})
 
         except pylast.WSError as e:
             print(f"Error while processing album: {e}")
-            album_details.append({'name': f"Error: {e}", 'track_count': 0, 'rank': n_albums - index + 1})
+            album_details.append({'name': f"Error: {e}", 'track_count': 0, 'rank': index})
             continue
 
     return album_details
