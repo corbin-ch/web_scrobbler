@@ -3,7 +3,9 @@ import sys
 import pylast
 import os
 import time
+import sqlite3
 from flask import Flask, request, render_template, redirect, url_for, abort
+
 
 app = Flask(__name__)
 
@@ -12,6 +14,7 @@ CONFIG_DIR = os.path.expanduser("~/.config/pylast/")
 API_KEY_FILE = os.path.join(CONFIG_DIR, "api_key")
 API_SECRET_FILE = os.path.join(CONFIG_DIR, "api_secret")
 SESSION_KEY_FILE = os.path.join(CONFIG_DIR, ".session_key")
+DB_FILE_PATH = os.path.join(CONFIG_DIR, "artists.db")
 
 # Dry run, yes or no?
 DRY = False
@@ -72,7 +75,8 @@ def scrobble():
 
 @app.route('/')
 def index():
-        return render_template('search.html')
+        artists = get_all_artists()
+        return render_template('search.html', artists=artists)
 
 
 @app.errorhandler(404)
@@ -83,6 +87,7 @@ def page_not_found(error):
 def scrobble_album(artist, album, time_str=None):
     # TODO: general error handling -- scrobbling albums with 0 tracks,
     #       searching for non-existant artists, etc
+    add_artist_to_db(artist)
     album_info = network.get_album(artist, album)
 
     tracks = album_info.get_tracks()
@@ -153,5 +158,41 @@ def search_albums(artist, limit=10):
 
     return album_details
 
+def create_db():
+    conn = sqlite3.connect(DB_FILE_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS artists (
+            id INTEGER PRIMARY KEY,
+            name TEXT UNIQUE NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def add_artist_to_db(artist):
+    conn = sqlite3.connect(DB_FILE_PATH)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('INSERT INTO artists (name) VALUES (?)', (artist,))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print(f"Artist {artist} is already in the db")
+    finally:
+        conn.close()
+
+def get_all_artists():
+    conn = sqlite3.connect(DB_FILE_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT name FROM artists')
+    artists = [row[0] for row in cursor.fetchall()]
+
+    conn.close()
+    return artists
+
+
 if __name__ == '__main__':
+    create_db()
     app.run(debug=True)
